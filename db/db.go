@@ -25,7 +25,7 @@ func CreateIfNotExists() {
     pageviews integer,
     unique_pageviews integer,
     avg_time text,
-    bouce_rate real,
+    bounce_rate real,
     rating integer
   );
   `

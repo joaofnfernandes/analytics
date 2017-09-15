@@ -62,7 +62,7 @@ func (v *vote) getRating() float32 {
 // NewVote is a constructor for a vote but returns error if the vote is set
 // with default values
 func newVote(csvRecord []string) (vote, error) {
-	var v vote
+	v := vote{}
 	var err error
 
 	if len(csvRecord) < 7 {
@@ -118,13 +118,15 @@ func (v *vote) insert(db *sql.DB) {
 func importFromCsv(filename string) []vote {
 	records, _ := parser.ImportCSV(filename)
 
-	votes := make([]vote, len(records))
+	votes := make([]vote, 1)
 	// Skip the CSV headers
 	for _, record := range records[1:] {
 		vote, err := newVote(record)
 		if err != nil {
-			votes = append(votes, vote)
+			log.Print("Failed to create vote")
+			continue
 		}
+		votes = append(votes, vote)
 	}
 	return votes
 }
