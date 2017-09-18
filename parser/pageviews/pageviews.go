@@ -19,7 +19,9 @@ func CsvToDB(dataSourceName string, csvFilePath string) {
 
 	pageViews := importFromCsv(csvFilePath)
 	for _, pageView := range pageViews {
-		pageView.insert(db)
+		if !pageView.isDefault() {
+			pageView.insert(db)
+		}
 	}
 }
 

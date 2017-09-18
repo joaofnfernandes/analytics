@@ -1,8 +1,8 @@
 package main
 
 import (
-	//"github.com/joaofnfernandes/analytics/db"
-	//"github.com/joaofnfernandes/analytics/parser/pageviews"
+	"github.com/joaofnfernandes/analytics/db"
+	"github.com/joaofnfernandes/analytics/parser/pageviews"
 	"github.com/joaofnfernandes/analytics/parser/votes"
 	"os"
 )
@@ -16,8 +16,8 @@ const (
 func main() {
 	opt := getSettings()
 
-	//db.CreateIfNotExists(opt.DbFilename)
-	//pageviews.CsvToDB(opt.DbFilename, opt.PageViewsFilename)
+	db.CreateIfNotExists(opt.DbFilename)
+	pageviews.CsvToDB(opt.DbFilename, opt.PageViewsFilename)
 	votes.CsvToDb(opt.DbFilename, opt.VotesFilename)
 }
 

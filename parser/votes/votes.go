@@ -21,8 +21,9 @@ func CsvToDb(dataSourceName string, csvFilePath string) {
 
 	votes := importFromCsv(csvFilePath)
 	for _, vote := range votes {
-		//vote.insert(db)
-		fmt.Println(vote)
+		if !vote.isDefault() {
+			vote.update(db)
+		}
 	}
 }
 
@@ -94,11 +95,8 @@ func newVote(csvRecord []string) (vote, error) {
 	return v, err
 }
 
-// add leading / to all urls
-// remove ending .md
-// compose/compose-file.md => /compose/composefile/
-// get-started/part2.md    => /get-started/part2/
-// engine-installation/index.md => /engine-installation/index/
+// normalizeUrl takes a url and transforms it into /path/to/resource/
+// returns error if url is invalid or empty
 func normalizeUrl(url string) (string, error) {
 	var err error
 	url = strings.Replace(url, ".md", "", 1)
@@ -111,8 +109,10 @@ func normalizeUrl(url string) (string, error) {
 }
 
 // TODO: consider returning error
-func (v *vote) insert(db *sql.DB) {
-	const sqlStmt = "insert into page(url, rating) values(?, ?)"
+func (v *vote) update(db *sql.DB) {
+	const sqlStmt = `update page
+	set rating = ?
+	where url = ?`
 
 	// TODO: do we really need to start a transaction?
 	tx, err := db.Begin()
@@ -125,7 +125,7 @@ func (v *vote) insert(db *sql.DB) {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(v.Url, v.getRating())
+	_, err = stmt.Exec(v.getRating(), v.Url)
 	if err != nil {
 		log.Print(err)
 	}
@@ -141,7 +141,7 @@ func importFromCsv(filename string) []vote {
 	for _, record := range records[1:] {
 		vote, err := newVote(record)
 		if err != nil {
-			log.Print("Failed to create vote")
+			log.Print(err)
 			continue
 		}
 		votes = append(votes, vote)
