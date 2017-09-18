@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/joaofnfernandes/analytics/parser"
 	_ "github.com/mattn/go-sqlite3"
@@ -88,7 +90,7 @@ func newPageView(csvRecord []string) (pageView, error) {
 		return p, errors.New(fmt.Sprintf("Trying to create page view from invalid csv: %v", csvRecord))
 	}
 
-	p.Url, currErr = parser.NormalizeUrl(csvRecord[0])
+	p.Url, currErr = normalizeUrl(csvRecord[0])
 	if err == nil {
 		err = currErr
 	}
@@ -103,8 +105,8 @@ func newPageView(csvRecord []string) (pageView, error) {
 		err = currErr
 	}
 
-	p.AvgTime = csvRecord[3]
-	p.BounceRate, err = parser.StringPercentToFloat(csvRecord[5])
+	p.AvgTime = normalizeTime(csvRecord[3])
+	p.BounceRate, err = stringPercentToFloat(csvRecord[5])
 	if err == nil {
 		err = currErr
 	}
@@ -113,6 +115,29 @@ func newPageView(csvRecord []string) (pageView, error) {
 		err = errors.New("Created page view with default values")
 	}
 	return p, err
+}
+
+// normalizeUrl takes a url and transforms it into /path/to/resource/
+// returns error if url is invalid or empty
+func normalizeUrl(url string) (string, error) {
+	var err error
+	if url == "" {
+		err = errors.New(fmt.Sprintf("Trying to normalize invalid url: %s", url))
+	}
+	return url, err
+}
+
+// normalizeTime removes characters that are not part of a time
+// <00:00:01 => 00:00:01
+func normalizeTime(time string) string {
+	return strings.Replace(time, "<", "", -1)
+}
+
+// stringPercentToFloat converts "12.48%" into float32(12.48)
+func stringPercentToFloat(s string) (float32, error) {
+	s = strings.Replace(s, "%", "", -1)
+	v, err := strconv.ParseFloat(s, 32)
+	return float32(v), err
 }
 
 func importFromCsv(filename string) []pageView {
