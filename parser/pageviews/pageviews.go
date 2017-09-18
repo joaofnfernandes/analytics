@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -31,7 +32,7 @@ type pageView struct {
 	Url             string
 	PageViews       int
 	UniquePageViews int
-	AvgTime         string
+	AvgTime         int
 	BounceRate      float32
 }
 
@@ -105,7 +106,10 @@ func newPageView(csvRecord []string) (pageView, error) {
 		err = currErr
 	}
 
-	p.AvgTime = normalizeTime(csvRecord[3])
+	p.AvgTime, err = normalizeDuration(csvRecord[3])
+	if err == nil {
+		err = currErr
+	}
 	p.BounceRate, err = stringPercentToFloat(csvRecord[5])
 	if err == nil {
 		err = currErr
@@ -127,17 +131,35 @@ func normalizeUrl(url string) (string, error) {
 	return url, err
 }
 
-// normalizeTime removes characters that are not part of a time
-// <00:00:01 => 00:00:01
-func normalizeTime(time string) string {
-	return strings.Replace(time, "<", "", -1)
+// normalizeDuration removes characters that are not part of a time
+// <00:01:01 => 61
+func normalizeDuration(time string) (int, error) {
+	time = strings.Replace(time, "<", "", -1)
+	re := regexp.MustCompile(`(\d{1,2}):(\d{2}):(\d{2})`)
+	matches := re.FindStringSubmatch(time)
+
+	if len(matches) < 4 {
+		return 0, errors.New(fmt.Sprintf("Invalid duration: %s", time))
+	}
+	var hour, min, sec int
+	var err error
+	if hour, err = strconv.Atoi(matches[1]); err != nil {
+		return 0, errors.New(fmt.Sprintf("Invalid duration: %s", time))
+	}
+	if min, err = strconv.Atoi(matches[2]); err != nil {
+		return 0, errors.New(fmt.Sprintf("Invalid duration: %s", time))
+	}
+	if sec, err = strconv.Atoi(matches[3]); err != nil {
+		return 0, errors.New(fmt.Sprintf("Invalid duration: %s", time))
+	}
+	return (sec + 60*min + 3600*hour), nil
 }
 
 // stringPercentToFloat converts "12.48%" into float32(12.48)
 func stringPercentToFloat(s string) (float32, error) {
 	s = strings.Replace(s, "%", "", -1)
 	v, err := strconv.ParseFloat(s, 32)
-	return float32(v), err
+	return (float32(v) / 100), err
 }
 
 func importFromCsv(filename string) []pageView {

@@ -23,7 +23,7 @@ func CreateIfNotExists(dbFilename string) {
     url text not null primary key,
     pageviews integer,
     unique_pageviews integer,
-    avg_time text,
+    avg_time int,
     bounce_rate real,
     rating integer
   );
