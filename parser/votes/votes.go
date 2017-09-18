@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/joaofnfernandes/analytics/parser"
 	_ "github.com/mattn/go-sqlite3"
@@ -20,7 +21,8 @@ func CsvToDb(dataSourceName string, csvFilePath string) {
 
 	votes := importFromCsv(csvFilePath)
 	for _, vote := range votes {
-		vote.insert(db)
+		//vote.insert(db)
+		fmt.Println(vote)
 	}
 }
 
@@ -69,7 +71,7 @@ func newVote(csvRecord []string) (vote, error) {
 		return v, errors.New(fmt.Sprintf("Trying to create vote with from invalid csv: %s", csvRecord))
 	}
 
-	v.Url, err = parser.NormalizeUrl(csvRecord[1])
+	v.Url, err = normalizeUrl(csvRecord[1])
 	if err != nil {
 		return v, err
 	}
@@ -90,6 +92,22 @@ func newVote(csvRecord []string) (vote, error) {
 		err = errors.New("Created vote with default values")
 	}
 	return v, err
+}
+
+// add leading / to all urls
+// remove ending .md
+// compose/compose-file.md => /compose/composefile/
+// get-started/part2.md    => /get-started/part2/
+// engine-installation/index.md => /engine-installation/index/
+func normalizeUrl(url string) (string, error) {
+	var err error
+	url = strings.Replace(url, ".md", "", 1)
+	url = fmt.Sprintf("/%s/", url)
+
+	if url == "" {
+		err = errors.New(fmt.Sprintf("Trying to normalize invalid url: %s", url))
+	}
+	return url, err
 }
 
 // TODO: consider returning error

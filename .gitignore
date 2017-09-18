@@ -1,5 +1,6 @@
 # General
 .DS_Store
 
-# Database
 *.db
+bin/
+logs.txt

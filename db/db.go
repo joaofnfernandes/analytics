@@ -7,11 +7,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const dbFilename = "analytics.db"
-
 // CreateIfNotExists creates a DB with a single table named page
-// TODO: return error instead of exiting
-func CreateIfNotExists() {
+// TODO: return error instead of exiting,
+// create path if doesn't exist
+func CreateIfNotExists(dbFilename string) {
 
 	db, err := sql.Open("sqlite3", dbFilename)
 	if err != nil {
