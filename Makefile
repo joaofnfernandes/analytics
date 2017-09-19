@@ -1,3 +1,6 @@
+.PHONY: all
+all: etl charts
+
 .PHONY: etl
 etl:
 	@go run main.go
