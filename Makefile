@@ -1,12 +1,10 @@
 .PHONY: all
-all: etl charts
+all: bin/analytics.db bin/charts.pdf
 
-.PHONY: etl
-etl:
+bin/analytics.db:
 	@go run main.go
 
-.PHONY: charts
-charts: main.R bin/analytics.db
+bin/charts.pdf: main.R bin/analytics.db
 	@Rscript main.R
 
 .PHONY: clean
