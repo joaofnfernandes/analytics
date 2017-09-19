@@ -1,6 +1,6 @@
 # General
 .DS_Store
-
+.Rhistory
 *.db
 bin/
 logs.txt
