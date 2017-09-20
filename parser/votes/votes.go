@@ -111,7 +111,7 @@ func normalizeUrl(url string) (string, error) {
 // TODO: consider returning error
 func (v *vote) update(db *sql.DB) {
 	const sqlStmt = `update page
-	set rating = ?
+	set votes = ?, rating = ?
 	where url = ?`
 
 	// TODO: do we really need to start a transaction?
@@ -125,7 +125,7 @@ func (v *vote) update(db *sql.DB) {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(v.getRating(), v.Url)
+	_, err = stmt.Exec(v.TotalVotes, v.getRating(), v.Url)
 	if err != nil {
 		log.Print(err)
 	}

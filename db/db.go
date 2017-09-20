@@ -25,6 +25,7 @@ func CreateIfNotExists(dbFilename string) {
     unique_pageviews integer,
     avg_time int,
     bounce_rate real,
+		votes int,
     rating integer
   );
   `
